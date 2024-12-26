@@ -76,10 +76,10 @@
                         console.log(d)
                         return JSON.stringify(d); // Convert the DataTable parameters to JSON
                     },
-                    error: function (xhr, error, thrown) {
+                   // error: function (xhr, error, thrown) {
                        // console.error('DataTables error:', error);
                         // alert('Error loading data. Please try again.');
-                    }
+                   // }
                 },
                 columns: [
                     { data: 'autoId', name: 'autoId' },
@@ -109,6 +109,11 @@
             $('#startDate').on('keyup', function () {
                 table.ajax.reload();
             });
+
+
+            // Error handling
+             $.fn.dataTable.ext.errMode = 'none'; $('#machineDataTable').on('error.dt', function(e, settings, techNote, message) { console.log('DataTables error:', message); });
+
 
             // Previous day button click
             $("#prevDay").click(function () {
