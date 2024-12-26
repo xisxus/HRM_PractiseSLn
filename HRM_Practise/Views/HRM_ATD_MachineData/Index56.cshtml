@@ -3,12 +3,35 @@
 }
 
 <div class="card">
-    <div class="card-header">
+    <div class="card-header bg-primary text-white">
         <h3 class="card-title">Machine Attendance Data</h3>
     </div>
     <div class="card-body">
-        <table id="machineDataTable" class="table table-bordered table-striped">
-            <thead>
+
+        <div class="container my-4">
+            <div class="row align-items-center justify-content-center">
+                <!-- Previous Day Button -->
+                <div class="col-md-3 text-center mb-2">
+                    <button type="button" id="prevDay" class="btn btn-outline-primary btn-block">
+                        <i class="bi bi-arrow-left-circle"></i> Previous Day
+                    </button>
+                </div>
+                <!-- Date Filter Input -->
+                <div class="col-md-4 text-center mb-2">
+                    <input type="date" id="startDate" class="form-control" />
+                </div>
+                <!-- Next Day Button -->
+                <div class="col-md-3 text-center mb-2">
+                    <button type="button" id="nextDay" class="btn btn-outline-primary btn-block">
+                        Next Day <i class="bi bi-arrow-right-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <table id="machineDataTable" class="table table-bordered table-hover table-striped">
+            <thead class="thead-dark">
                 <tr>
                     <th>ID</th>
                     <th>Fingerprint ID</th>
@@ -19,40 +42,44 @@
                     <th>HOALR</th>
                 </tr>
             </thead>
+            <tbody>
+                <!-- Data Rows Will Be Populated Here -->
+            </tbody>
         </table>
     </div>
 </div>
 
+
 @section Scripts {
-    <script>
-        $(document).ready(function () {
-            $('#machineDataTable').DataTable({
+
+   <script>
+
+                    $(document).ready(function () {
+            var table = $('#machineDataTable').DataTable({
                 processing: true,
                 serverSide: true,
+                ajax: {
+                    url: '/HRM_ATD_MachineData/GetMachineData',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    data: function (d) {
+                        var startDate = $('#startDate').val();  // Get the selected start date
+                        var endDate = $('#endDate').val();  // Get the selected end date
 
-                        ajax: {
-                            url: '/HRM_ATD_MachineData/GetMachineData',
-                            type: 'POST',
-                            contentType: 'application/json',  // Ensure Content-Type is set to application/json
-                            dataType: 'json',  // Expect JSON in the response
-                            data: function (d) {
+                        // Add the start and end date to the request data
+                        d.StartDate = startDate ? startDate : null;
+                        d.EndDate = endDate ? endDate : null;
 
-                                console.log(d)
-                                // Add necessary modifications to the data if needed
-                                return JSON.stringify(d);  // Convert data to JSON string
-                            },
-                            error: function (xhr, error, thrown) {
-                                console.error('DataTables error:', error);
-                                console.error('DataTables xhr:', xhr);
-                                console.error('DataTables thrown:', thrown);
-                                alert('Error loading data. Please try again.');
-                            }
-                        },
-
-
-
-
-
+                        return JSON.stringify(d);  // Convert the DataTable parameters to JSON
+                    },
+                    error: function (xhr, error, thrown) {
+                        console.error('DataTables error:', error);
+                        console.error('DataTables xhr:', xhr);
+                        console.error('DataTables thrown:', thrown);
+                        alert('Error loading data. Please try again.');
+                    }
+                },
                 columns: [
                     { data: 'autoId', name: 'autoId' },
                     { data: 'fingerPrintId', name: 'fingerprint' },
@@ -61,7 +88,7 @@
                     { data: 'time', name: 'time' },
                     {
                         data: null,
-                        render: function(data, type, row) {
+                        render: function (data, type, row) {
                             if (data.latitude && data.longitude) {
                                 return data.latitude + ', ' + data.longitude;
                             }
@@ -73,14 +100,41 @@
                 order: [[0, 'desc']],
                 pageLength: 50,
                 lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
-                // Enable scrolling for better performance
                 scrollY: '60vh',
                 scrollCollapse: true,
-                // Error handling
                 error: function (xhr, error, thrown) {
                     console.error('DataTables error:', error);
                 }
             });
+
+            // Trigger table reload when the start or end date changes
+            $('#startDate, #endDate').on('change', function () {
+                table.ajax.reload();  // Reload the DataTable with the new date filters
+            });
+
+
+
+            $("#prevDay").click(function(){ 
+                let currentDate = new Date($("#startDate").val());
+                currentDate.setDate(currentDate.getDate() - 1);
+                $("#startDate").val(currentDate.toISOString().substring(0, 10));
+                table.ajax.reload();
+            });
+
+            $("#nextDay").click(function(){
+                let currentDate = new Date($("#startDate").val());
+                currentDate.setDate(currentDate.getDate() + 1);
+                $("#startDate").val(currentDate.toISOString().substring(0, 10));
+                table.ajax.reload();
+            });
+
+
+
+
+
         });
-    </script>
+
+
+   </script>
+
 }

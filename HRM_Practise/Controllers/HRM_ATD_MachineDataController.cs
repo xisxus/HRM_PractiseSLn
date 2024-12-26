@@ -59,7 +59,7 @@ namespace HRM_Practise.Controllers
 
         [HttpPost]
         public async Task<JsonResult> GetMachineData([FromBody] DataTableParameters parameters)
-        {
+       {
             try
             {
                
@@ -85,6 +85,17 @@ namespace HRM_Practise.Controllers
 
                 // Query
                 var query = _context.HRM_ATD_MachineDatas.AsNoTracking().AsQueryable();
+
+                if (parameters.StartDate.HasValue)
+                {
+                    query = query.Where(m => m.Date == parameters.StartDate.Value);
+                }
+
+                //if (parameters.EndDate.HasValue)
+                //{
+                //    query = query.Where(m => m.Date <= parameters.EndDate.Value);
+                //}
+
 
                 // Get total count
                 recordsTotal = await query.CountAsync();
