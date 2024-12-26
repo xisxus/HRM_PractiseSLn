@@ -48,8 +48,93 @@ namespace HRM_Practise.Controllers
         }
 
 
-       
+        public IActionResult Index56Procedure()
+        {
+            return View();
+        }
 
+        public async Task<JsonResult> GetMachineDataFromProcedure([FromBody] DataTableParameters parameters)
+        {
+            try
+            {
+                // Define output parameters
+                int totalRecords = 0;
+                int filteredRecords = 0;
+
+                // Create a list to hold the results
+                var data = new List<object>();
+
+                // Define the connection string (make sure to replace with your actual connection string)
+                var connectionString = _context.Database.GetDbConnection().ConnectionString;
+
+                using (var connection = new SqlConnection(connectionString))
+                {
+                    await connection.OpenAsync();
+
+                    using (var command = new SqlCommand("GetMachineData", connection))
+                    {
+                        command.CommandType = CommandType.StoredProcedure;
+
+                        // Add parameters
+                        command.Parameters.AddWithValue("@StartDate", parameters.StartDate.HasValue ? (object)parameters.StartDate.Value : DBNull.Value);
+                        command.Parameters.AddWithValue("@EndDate", parameters.EndDate.HasValue ? (object)parameters.EndDate.Value : DBNull.Value);
+                        command.Parameters.AddWithValue("@SearchValue", string.IsNullOrEmpty(parameters.Search.Value) ? (object)DBNull.Value : parameters.Search.Value);
+                        command.Parameters.AddWithValue("@SortColumn", parameters.Order.Count > 0 ? parameters.Order[0].Name : (object)DBNull.Value);
+                        command.Parameters.AddWithValue("@SortDirection", parameters.Order.Count > 0 ? parameters.Order[0].Dir : "ASC");
+                        command.Parameters.AddWithValue("@Start", parameters.Start);
+                        command.Parameters.AddWithValue("@Length", parameters.Length);
+
+                        // Output parameters
+                        var totalRecordsParam = new SqlParameter("@TotalRecords", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                        var filteredRecordsParam = new SqlParameter("@FilteredRecords", SqlDbType.Int) { Direction = ParameterDirection.Output };
+                        command.Parameters.Add(totalRecordsParam);
+                        command.Parameters.Add(filteredRecordsParam);
+
+                        // Execute the command
+                        using (var reader = await command.ExecuteReaderAsync())
+                        {
+                            while (await reader.ReadAsync())
+                            {
+                                data.Add(new
+                                {
+                                    AutoId = reader["AutoId"],
+                                    FingerPrintId = reader["FingerPrintId"],
+                                    MachineId = reader["MachineId"],
+                                    Date = ((DateTime)reader["Date"]).ToString("yyyy-MM-dd"),
+                                    Time = ((TimeSpan)reader["Time"]).ToString(@"hh\:mm\:ss"),
+                                    Latitude = reader["Latitude"],
+                                    Longitude = reader["Longitude"],
+                                    HOALR = reader["HOALR"]
+                                });
+                            }
+                        }
+
+                        // Get output parameter values
+                        totalRecords = (int)totalRecordsParam.Value;
+                        filteredRecords = (int)filteredRecordsParam.Value;
+                    }
+                }
+
+                return Json(new
+                {
+                    recordsFiltered = filteredRecords,
+                    recordsTotal = totalRecords,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here (consider using a logging framework)
+                return Json(new
+                {
+                    draw = "0",
+                    recordsFiltered = 0,
+                    recordsTotal = 0,
+                    data = new List<object>(),
+                    error = "An error occurred while processing your request."
+                });
+            }
+        }
 
 
         public IActionResult Index56()

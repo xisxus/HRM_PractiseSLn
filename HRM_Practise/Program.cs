@@ -35,6 +35,6 @@ app.UseCors("AllowAll");
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=HRM_ATD_MachineData}/{action=Index56}/{id?}");
+    pattern: "{controller=HRM_ATD_MachineData}/{action=Index56Procedure}/{id?}");
 
 app.Run();

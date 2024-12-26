@@ -1,8 +1,10 @@
-﻿@{
-    ViewData["Title"] = "Machine Data";
+﻿
+@{
+    ViewData["Title"] = "Index56Procedure";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h1>Non - Procedure</h1>
+<h1>Procedure</h1>
 
 
 <div class="card">
@@ -55,14 +57,14 @@
 
 @section Scripts {
 
-   <script>
+    <script>
 
                     $(document).ready(function () {
             var table = $('#machineDataTable').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: '/HRM_ATD_MachineData/GetMachineData',
+                    url: '/HRM_ATD_MachineData/GetMachineDataFromProcedure',
                     type: 'POST',
                     contentType: 'application/json',
                     dataType: 'json',
@@ -117,7 +119,7 @@
 
 
 
-            $("#prevDay").click(function(){ 
+            $("#prevDay").click(function(){
                 let currentDate = new Date($("#startDate").val());
                 currentDate.setDate(currentDate.getDate() - 1);
                 $("#startDate").val(currentDate.toISOString().substring(0, 10));
@@ -138,6 +140,6 @@
         });
 
 
-   </script>
+    </script>
 
 }
