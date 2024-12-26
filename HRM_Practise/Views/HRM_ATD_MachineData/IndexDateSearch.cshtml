@@ -1,0 +1,135 @@
+﻿@{
+    ViewData["Title"] = "Machine Data";
+}
+
+<h1>Non - Procedure</h1>
+
+
+<div class="card">
+    <div class="card-header bg-primary text-white">
+        <h3 class="card-title">Machine Attendance Data</h3>
+    </div>
+    <div class="card-body">
+
+        <div class="container my-4">
+            <div class="row align-items-center justify-content-center">
+                <!-- Previous Day Button -->
+                <div class="col-md-3 text-center mb-2">
+                    <button type="button" id="prevDay" class="btn btn-outline-primary btn-block">
+                        <i class="bi bi-arrow-left-circle"></i> Previous Day
+                    </button>
+                </div>
+                <!-- Date Filter Input -->
+                <div class="col-md-4 text-center mb-2">
+                    <input type="text" id="startDate" class="form-control" placeholder="YYYY-MM-DD" />
+                </div>
+
+                <!-- Next Day Button -->
+                <div class="col-md-3 text-center mb-2">
+                    <button type="button" id="nextDay" class="btn btn-outline-primary btn-block">
+                        Next Day <i class="bi bi-arrow-right-circle"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+
+        <table id="machineDataTable" class="table table-bordered table-hover table-striped">
+            <thead class="thead-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Fingerprint ID</th>
+                    <th>Machine ID</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Location</th>
+                    <th>HOALR</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Data Rows Will Be Populated Here -->
+            </tbody>
+        </table>
+    </div>
+</div>
+
+
+@section Scripts {
+
+    <script>
+
+                     $(document).ready(function () {
+            var table = $('#machineDataTable').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '/HRM_ATD_MachineData/GetMachineDataWithDate',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    dataType: 'json',
+                    data: function (d) {
+                        var startDate = $('#startDate').val(); // Get the typed start date
+
+                        // Send the start date as a string
+                        d.StartDate = startDate ? startDate : null;
+
+                        console.log(d)
+                        return JSON.stringify(d); // Convert the DataTable parameters to JSON
+                    },
+                    error: function (xhr, error, thrown) {
+                        console.error('DataTables error:', error);
+                        alert('Error loading data. Please try again.');
+                    }
+                },
+                columns: [
+                    { data: 'autoId', name: 'autoId' },
+                    { data: 'fingerPrintId', name: 'fingerprint' },
+                    { data: 'machineId', name: 'machineid' },
+                    { data: 'date', name: 'date' },
+                    { data: 'time', name: 'time' },
+                    {
+                        data: null,
+                        render: function (data, type, row) {
+                            if (data.latitude && data.longitude) {
+                                return data.latitude + ', ' + data.longitude;
+                            }
+                            return 'N/A';
+                        }
+                    },
+                    { data: 'hoalr' }
+                ],
+                order: [[0, 'desc']],
+                pageLength: 50,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                scrollY: '60vh',
+                scrollCollapse: true
+            });
+
+            // Trigger table reload on keyup for typed date
+            $('#startDate').on('keyup', function () {
+                table.ajax.reload();
+            });
+
+            // Previous day button click
+            $("#prevDay").click(function () {
+                let currentDate = new Date($("#startDate").val());
+                currentDate.setDate(currentDate.getDate() - 1);
+                $("#startDate").val(currentDate.toISOString().substring(0, 10));
+                table.ajax.reload();
+            });
+
+            // Next day button click
+            $("#nextDay").click(function () {
+                let currentDate = new Date($("#startDate").val());
+                currentDate.setDate(currentDate.getDate() + 1);
+                $("#startDate").val(currentDate.toISOString().substring(0, 10));
+                table.ajax.reload();
+            });
+        });
+
+
+
+
+    </script>
+
+}

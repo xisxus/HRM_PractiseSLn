@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using HRM_Practise.Models;
@@ -46,6 +45,236 @@ namespace HRM_Practise.Controllers
                 data = paginatedData
             });
         }
+
+
+        //Helper date
+
+        public static (bool Success, int Day, int Month, int? Year) ExtractDateComponents(string dateString)
+        {
+            string[] formats = {
+                "d/M/yyyy", "d-M-yyyy", "dd/MM/yyyy", "dd-MM-yyyy",
+                "M/d/yyyy", "M-d-yyyy", "MM/dd/yyyy", "MM-dd-yyyy",
+                "d/M", "d-M", "dd/MM", "dd-MM",
+                "M/d", "M-d", "MM/dd", "MM-dd",
+                "d", "M"
+            };
+
+            if (DateTime.TryParseExact(dateString, formats, System.Globalization.CultureInfo.InvariantCulture,
+                                       System.Globalization.DateTimeStyles.None, out DateTime parsedDate))
+            {
+                int day = parsedDate.Day;
+                int month = parsedDate.Month;
+                int? year = parsedDate.Year != 1 ? parsedDate.Year : null;
+
+                return (true, day, month, year);
+            }
+
+            return (false, 0, 0, null); // Return a failure result
+        }
+
+
+
+
+
+
+
+        public IActionResult IndexDateSearch()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<JsonResult> GetMachineDataWithDate([FromBody] DataTableParameters2 parameters2)
+        {
+            try
+            {
+                var draw = parameters2.Draw;
+                var start = parameters2.Start;
+                var length = parameters2.Length;
+                var sortColumn = "";
+                var sortColumnDirection = "";
+
+                foreach (var item in parameters2.Order)
+                {
+                    sortColumnDirection = item.Dir;
+                    sortColumn = item.Name;
+
+                }
+
+                var searchValue = parameters2.Search.Value;
+
+                int pageSize = length != null ? Convert.ToInt32(length) : 0;
+                int skip = start != null ? Convert.ToInt32(start) : 0;
+                int recordsTotal = 0;
+
+                // Query
+                var query = _context.HRM_ATD_MachineDatas.AsNoTracking().AsQueryable();
+
+                //day month year
+
+
+
+
+                int commonDay = 1;
+                int commonMonth = 1;
+                int commonYear = 1;
+
+
+                if (parameters2.StartDate != null)
+                {
+
+                    if (!parameters2.StartDate.Contains("/") || !parameters2.StartDate.Contains("-"))
+                    {
+
+                        var dateTemp = Convert.ToInt16(parameters2.StartDate);
+
+                        if (parameters2.StartDate.Length >= 3)
+                        {
+                            //parameters2.StartDate = Convert.ToString(commonYear);
+                            commonYear = Convert.ToInt16(parameters2.StartDate);
+                        }
+                        else
+                        {
+
+                            commonDay = Convert.ToInt16(parameters2.StartDate);
+                            if (dateTemp <= 12)
+                            {
+                                commonMonth = Convert.ToInt16(parameters2.StartDate);
+
+                            }
+
+                            // parameters2.StartDate = Convert.ToString(commonDay);
+                            // parameters2.StartDate = Convert.ToString(commonMonth);
+                        }
+
+                    }
+                    else
+                    {
+                        var resultDate = ExtractDateComponents(parameters2.StartDate);
+                        resultDate.Day = Convert.ToInt16(commonDay);
+                        resultDate.Month = Convert.ToInt16(commonMonth);
+                        resultDate.Year = Convert.ToInt16(commonYear);
+
+                    }
+                }
+
+                if (commonDay != 1 || commonYear != 1 || commonMonth != 1)
+                {
+
+                    if (commonDay != 1 && commonMonth != 1 && commonYear != 1)
+                    {
+                        DateTime commonDayDate = new DateTime(commonYear, commonMonth, commonDay);
+
+
+                        query = query.Where(m => m.Date == commonDayDate);
+
+                    }
+                    else if (commonDay != 1 || commonMonth != 1)
+                    {
+                        DateOnly commonDayDate = new DateOnly(commonYear, commonMonth, commonDay);
+
+                        query = query.Where(m => m.Date.Day == commonDayDate.Day);
+                        query = query.Where(m => m.Date.Month == commonDayDate.Month);
+                    }
+                }
+
+
+
+
+
+
+
+                //if (parameters.StartDate.HasValue)
+                //{
+                //    query = query.Where(m => m.Date == parameters.StartDate.Value);
+                //}
+
+                //if (parameters.EndDate.HasValue)
+                //{
+                //    query = query.Where(m => m.Date <= parameters.EndDate.Value);
+                //}
+
+
+                // Get total count
+                recordsTotal = await query.CountAsync();
+
+                // Apply Search
+                if (!string.IsNullOrEmpty(searchValue))
+                {
+                    query = query.Where(m =>
+                        (m.FingerPrintId != null && m.FingerPrintId.Contains(searchValue)) ||
+                        (m.MachineId != null && m.MachineId.Contains(searchValue)) ||
+                        (m.HOALR != null && m.HOALR.Contains(searchValue)));
+                }
+
+                // Get filtered count
+                var recordsFiltered = await query.CountAsync();
+
+                // Apply Sorting
+                if ((!string.IsNullOrEmpty(sortColumn)) && (!string.IsNullOrEmpty(sortColumnDirection)))
+                {
+                    query = sortColumn.ToLower() switch
+                    {
+                        "fingerprint" => sortColumnDirection.ToLower() == "asc"
+                            ? query.OrderBy(m => m.FingerPrintId)
+                            : query.OrderByDescending(m => m.FingerPrintId),
+                        "machineid" => sortColumnDirection.ToLower() == "asc"
+                            ? query.OrderBy(m => m.MachineId)
+                            : query.OrderByDescending(m => m.MachineId),
+                        "date" => sortColumnDirection.ToLower() == "asc"
+                            ? query.OrderBy(m => m.Date)
+                            : query.OrderByDescending(m => m.Date),
+                        _ => sortColumnDirection.ToLower() == "asc"
+                            ? query.OrderBy(m => m.AutoId)
+                            : query.OrderByDescending(m => m.AutoId)
+                    };
+                }
+
+                // Apply Pagination
+                var data = await query
+                    .Skip(skip)
+                    .Take(pageSize)
+                    .Select(m => new
+                    {
+                        m.AutoId,
+                        m.FingerPrintId,
+                        m.MachineId,
+                        Date = m.Date.ToString("yyyy-MM-dd"),
+                        Time = m.Time.ToString("HH:mm:ss"),
+                        m.Latitude,
+                        m.Longitude,
+                        m.HOALR
+                    })
+                    .ToListAsync();
+
+                return Json(new
+                {
+                    // draw = draw,
+                    recordsFiltered = recordsFiltered,
+                    recordsTotal = recordsTotal,
+                    data = data
+                });
+            }
+            catch (Exception ex)
+            {
+                // Log the exception here
+                return Json(new
+                {
+                    draw = "0",
+                    recordsFiltered = 0,
+                    recordsTotal = 0,
+                    data = new List<object>(),
+                    error = "An error occurred while processing your request."
+
+
+
+                });
+            }
+        }
+
+
+
+
 
 
         public IActionResult Index56Procedure()
