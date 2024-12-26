@@ -56,7 +56,9 @@ namespace HRM_Practise.Controllers
                 "M/d/yyyy", "M-d-yyyy", "MM/dd/yyyy", "MM-dd-yyyy",
                 "d/M", "d-M", "dd/MM", "dd-MM",
                 "M/d", "M-d", "MM/dd", "MM-dd",
-                "d", "M"
+                "d", "M",
+                "yyyy/M/d", "yyyy-M-d", "yyyy/MM/dd", "yyyy-MM-dd", // Year-first formats
+                "yyyy/MM", "yyyy-MM" // Year-first with month only
             };
 
             if (DateTime.TryParseExact(dateString, formats, System.Globalization.CultureInfo.InvariantCulture,
