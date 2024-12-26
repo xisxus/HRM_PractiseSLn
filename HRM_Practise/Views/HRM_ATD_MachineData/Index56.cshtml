@@ -1,0 +1,86 @@
+﻿@{
+    ViewData["Title"] = "Machine Data";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Machine Attendance Data</h3>
+    </div>
+    <div class="card-body">
+        <table id="machineDataTable" class="table table-bordered table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Fingerprint ID</th>
+                    <th>Machine ID</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Location</th>
+                    <th>HOALR</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('#machineDataTable').DataTable({
+                processing: true,
+                serverSide: true,
+
+                        ajax: {
+                            url: '/HRM_ATD_MachineData/GetMachineData',
+                            type: 'POST',
+                            contentType: 'application/json',  // Ensure Content-Type is set to application/json
+                            dataType: 'json',  // Expect JSON in the response
+                            data: function (d) {
+
+                                console.log(d)
+                                // Add necessary modifications to the data if needed
+                                return JSON.stringify(d);  // Convert data to JSON string
+                            },
+                            error: function (xhr, error, thrown) {
+                                console.error('DataTables error:', error);
+                                console.error('DataTables xhr:', xhr);
+                                console.error('DataTables thrown:', thrown);
+                                alert('Error loading data. Please try again.');
+                            }
+                        },
+
+
+
+
+
+                columns: [
+                    { data: 'autoId', name: 'autoId' },
+                    { data: 'fingerPrintId', name: 'fingerprint' },
+                    { data: 'machineId', name: 'machineid' },
+                    { data: 'date', name: 'date' },
+                    { data: 'time', name: 'time' },
+                    {
+                        data: null,
+                        render: function(data, type, row) {
+                            if (data.latitude && data.longitude) {
+                                return data.latitude + ', ' + data.longitude;
+                            }
+                            return 'N/A';
+                        }
+                    },
+                    { data: 'hoalr' }
+                ],
+                order: [[0, 'desc']],
+                pageLength: 50,
+                lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
+                // Enable scrolling for better performance
+                scrollY: '60vh',
+                scrollCollapse: true,
+                // Error handling
+                error: function (xhr, error, thrown) {
+                    console.error('DataTables error:', error);
+                }
+            });
+        });
+    </script>
+}

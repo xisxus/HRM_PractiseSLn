@@ -1,0 +1,91 @@
+﻿@model PaginatedResult<HRM_Practise.Models.HRM_ATD_MachineData>
+
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>Index</h1>
+
+<!-- Search Box -->
+<form method="get" asp-action="Index" class="mb-3">
+    <div class="form-group">
+        <input type="text" name="searchValue" class="form-control" value="@ViewData["SearchValue"]" placeholder="Search by FingerPrintId or MachineId" />
+    </div>
+    <button type="submit" class="btn btn-primary">Search</button>
+</form>
+
+<!-- Display Results Count -->
+<div class="mb-3">
+    @if (Model.TotalRecords > 0)
+    {
+        <span>Showing @((Model.PageNumber - 1) * Model.PageSize + 1) to @Math.Min(Model.PageNumber * Model.PageSize, Model.TotalRecords) of @Model.TotalRecords results</span>
+    }
+    else
+    {
+        <span>No results found</span>
+    }
+</div>
+
+<!-- Make the table scrollable -->
+<div style="overflow-x: auto;">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>FingerPrintId</th>
+                <th>MachineId</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Latitude</th>
+                <th>Longitude</th>
+                <th>HOALR</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Data)
+            {
+                <tr>
+                    <td>@item.FingerPrintId</td>
+                    <td>@item.MachineId</td>
+                    <td>@item.Date</td>
+                    <td>@item.Time</td>
+                    <td>@item.Latitude</td>
+                    <td>@item.Longitude</td>
+                    <td>@item.HOALR</td>
+                    <td>
+                        <a asp-action="Edit" asp-route-id="@item.AutoId">Edit</a> |
+                        <a asp-action="Details" asp-route-id="@item.AutoId">Details</a> |
+                        <a asp-action="Delete" asp-route-id="@item.AutoId">Delete</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Pagination -->
+<div style="overflow-x: auto; white-space: nowrap;">
+    <nav>
+        <ul class="pagination">
+            @if (Model.HasPreviousPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-pageNumber="@(Model.PageNumber - 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchValue="@ViewData["SearchValue"]">Previous</a>
+                </li>
+            }
+            @for (int i = 1; i <= Model.TotalPages; i++)
+            {
+                <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                    <a class="page-link" asp-action="Index" asp-route-pageNumber="@i" asp-route-pageSize="@Model.PageSize" asp-route-searchValue="@ViewData["SearchValue"]">@i</a>
+                </li>
+            }
+            @if (Model.HasNextPage)
+            {
+                <li class="page-item">
+                    <a class="page-link" asp-action="Index" asp-route-pageNumber="@(Model.PageNumber + 1)" asp-route-pageSize="@Model.PageSize" asp-route-searchValue="@ViewData["SearchValue"]">Next</a>
+                </li>
+            }
+        </ul>
+    </nav>
+</div>
