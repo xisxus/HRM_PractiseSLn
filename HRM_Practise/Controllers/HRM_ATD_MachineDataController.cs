@@ -123,10 +123,15 @@ namespace HRM_Practise.Controllers
                 if (parameters2.StartDate != null)
                 {
 
-                    if (!parameters2.StartDate.Contains("/") || !parameters2.StartDate.Contains("-"))
-                    {
 
-                        var dateTemp = Convert.ToInt16(parameters2.StartDate);
+                    int dateTemp;
+                    bool isConversionSuccessful = int.TryParse(parameters2.StartDate, out dateTemp);
+
+                    if (isConversionSuccessful)
+                    {
+                        
+
+
 
                         if (parameters2.StartDate.Length >= 3)
                         {
@@ -146,16 +151,63 @@ namespace HRM_Practise.Controllers
                             // parameters2.StartDate = Convert.ToString(commonDay);
                             // parameters2.StartDate = Convert.ToString(commonMonth);
                         }
-
                     }
                     else
                     {
                         var resultDate = ExtractDateComponents(parameters2.StartDate);
-                        resultDate.Day = Convert.ToInt16(commonDay);
-                        resultDate.Month = Convert.ToInt16(commonMonth);
-                        resultDate.Year = Convert.ToInt16(commonYear);
 
+                        commonYear = Convert.ToInt16(resultDate.Year);
+                        commonMonth = Convert.ToInt16(resultDate.Month);
+                        commonDay = Convert.ToInt16(resultDate.Day);
+
+                        //resultDate.Day = Convert.ToInt16(commonDay);
+                        //resultDate.Month = Convert.ToInt16(commonMonth);
+                        //resultDate.Year = Convert.ToInt16(commonYear);
                     }
+
+
+
+
+
+
+
+                    //if (!parameters2.StartDate.Contains("/") || !parameters2.StartDate.Contains("-"))
+                    //{
+
+                    //    var dateTemp = Convert.ToInt16(parameters2.StartDate);
+
+
+
+                    //    if (parameters2.StartDate.Length >= 3)
+                    //    {
+                    //        //parameters2.StartDate = Convert.ToString(commonYear);
+                    //        commonYear = Convert.ToInt16(parameters2.StartDate);
+                    //    }
+                    //    else
+                    //    {
+
+                    //        commonDay = Convert.ToInt16(parameters2.StartDate);
+                    //        if (dateTemp <= 12)
+                    //        {
+                    //            commonMonth = Convert.ToInt16(parameters2.StartDate);
+
+                    //        }
+
+                    //        // parameters2.StartDate = Convert.ToString(commonDay);
+                    //        // parameters2.StartDate = Convert.ToString(commonMonth);
+                    //    }
+
+                    //}
+                    //else
+                    //{
+                    //    var resultDate = ExtractDateComponents(parameters2.StartDate);
+                    //    resultDate.Day = Convert.ToInt16(commonDay);
+                    //    resultDate.Month = Convert.ToInt16(commonMonth);
+                    //    resultDate.Year = Convert.ToInt16(commonYear);
+
+                    //}
+
+
                 }
 
                 if (commonDay != 1 || commonYear != 1 || commonMonth != 1)
@@ -173,9 +225,26 @@ namespace HRM_Practise.Controllers
                     {
                         DateOnly commonDayDate = new DateOnly(commonYear, commonMonth, commonDay);
 
-                        query = query.Where(m => m.Date.Day == commonDayDate.Day);
-                        query = query.Where(m => m.Date.Month == commonDayDate.Month);
+                        if (commonDayDate.Month !=  1)
+                        {
+                            query = query.Where(m => m.Date.Month == commonDayDate.Month || m.Date.Day == commonDayDate.Day);
+
+                        }
+                        else
+                        {
+                            query = query.Where(m => m.Date.Day == commonDayDate.Day);
+
+                        }
+
+
                     }
+                    else if (commonYear != 1)
+                    {
+                        DateOnly commonDayDate = new DateOnly(commonYear, commonMonth, commonDay);
+                        query = query.Where(m => m.Date.Year == commonDayDate.Year);
+
+                    }
+
                 }
 
 
