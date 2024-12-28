@@ -14,22 +14,22 @@
         <div class="container my-4">
             <div class="row align-items-center justify-content-center">
                 <!-- Previous Day Button -->
-                <div class="col-md-3 text-center mb-2">
+               @*  <div class="col-md-3 text-center mb-2">
                     <button type="button" id="prevDay" class="btn btn-outline-primary btn-block">
                         <i class="bi bi-arrow-left-circle"></i> Previous Day
                     </button>
-                </div>
+                </div> *@
                 <!-- Date Filter Input -->
                 <div class="col-md-4 text-center mb-2">
                     <input type="text" id="startDate" class="form-control" placeholder="DD-MM-YYYY" />
                 </div>
 
                 <!-- Next Day Button -->
-                <div class="col-md-3 text-center mb-2">
+             @*    <div class="col-md-3 text-center mb-2">
                     <button type="button" id="nextDay" class="btn btn-outline-primary btn-block">
                         Next Day <i class="bi bi-arrow-right-circle"></i>
                     </button>
-                </div>
+                </div> *@
             </div>
         </div>
 
@@ -127,20 +127,20 @@
 
 
             // Previous day button click
-            $("#prevDay").click(function () {
-                let currentDate = new Date($("#startDate").val());
-                currentDate.setDate(currentDate.getDate() - 1);
-                $("#startDate").val(currentDate.toISOString().substring(0, 10));
-                table.ajax.reload();
-            });
+            // $("#prevDay").click(function () {
+            //     let currentDate = new Date($("#startDate").val());
+            //     currentDate.setDate(currentDate.getDate() - 1);
+            //     $("#startDate").val(currentDate.toISOString().substring(0, 10));
+            //     table.ajax.reload();
+            // });
 
-            // Next day button click
-            $("#nextDay").click(function () {
-                let currentDate = new Date($("#startDate").val());
-                currentDate.setDate(currentDate.getDate() + 1);
-                $("#startDate").val(currentDate.toISOString().substring(0, 10));
-                table.ajax.reload();
-            });
+            // // Next day button click
+            // $("#nextDay").click(function () {
+            //     let currentDate = new Date($("#startDate").val());
+            //     currentDate.setDate(currentDate.getDate() + 1);
+            //     $("#startDate").val(currentDate.toISOString().substring(0, 10));
+            //     table.ajax.reload();
+            // });
         });
 
 
