@@ -52,13 +52,13 @@ namespace HRM_Practise.Controllers
         public static (bool Success, int Day, int Month, int? Year) ExtractDateComponents(string dateString)
         {
             string[] formats = {
-                "d/M/yyyy", "d-M-yyyy", "dd/MM/yyyy", "dd-MM-yyyy",
-                "M/d/yyyy", "M-d-yyyy", "MM/dd/yyyy", "MM-dd-yyyy",
+                "d/M/yyyy", "d-M-yyyy", "dd/MM/yyyy", "dd-MM-yyyy",  "d/M/", "d-M-", "dd/MM/", "dd-MM-",
+                "M/d/yyyy", "M-d-yyyy", "MM/dd/yyyy", "MM-dd-yyyy",  "M/d/", "M-d-", "MM/dd/", "MM-dd-",
                 "d/M", "d-M", "dd/MM", "dd-MM",
                 "M/d", "M-d", "MM/dd", "MM-dd",
                 "d", "M",
-                "yyyy/M/d", "yyyy-M-d", "yyyy/MM/dd", "yyyy-MM-dd", // Year-first formats
-                "yyyy/MM", "yyyy-MM" // Year-first with month only
+                "yyyy/M/d", "yyyy-M-d", "yyyy/MM/dd", "yyyy-MM-dd",  "yyyy/M/", "yyyy-M-", "yyyy/MM/", "yyyy-MM-",
+                "yyyy/MM", "yyyy-MM" 
             };
 
             if (DateTime.TryParseExact(dateString, formats, System.Globalization.CultureInfo.InvariantCulture,
@@ -137,6 +137,7 @@ namespace HRM_Practise.Controllers
 
                         if (parameters2.StartDate.Length >= 3)
                         {
+                           
                             //parameters2.StartDate = Convert.ToString(commonYear);
                             commonYear = Convert.ToInt16(parameters2.StartDate);
                         }
@@ -243,7 +244,20 @@ namespace HRM_Practise.Controllers
                     else if (commonYear != 1)
                     {
                         DateOnly commonDayDate = new DateOnly(commonYear, commonMonth, commonDay);
-                        query = query.Where(m => m.Date.Year == commonDayDate.Year);
+
+                        var result = Convert.ToString(commonYear);
+                        if (result.Length ==3)
+                        {
+                            //var ResChar = Convert.ToChar(result);
+                            query = _context.HRM_ATD_MachineDatas.AsNoTracking().Where(item => item.Date.Year.ToString().StartsWith(result));
+                           // query = query.Where(item => item.Date.Year.ToString().StartsWith(result)).ToList();
+
+                        }
+                        else
+                        {
+                           query = query.Where(m => m.Date.Year == commonDayDate.Year);
+
+                        }
 
                     }
 

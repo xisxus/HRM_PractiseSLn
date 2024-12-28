@@ -21,7 +21,7 @@
                 </div>
                 <!-- Date Filter Input -->
                 <div class="col-md-4 text-center mb-2">
-                    <input type="text" id="startDate" class="form-control" placeholder="YYYY-MM-DD" />
+                    <input type="text" id="startDate" class="form-control" placeholder="DD-MM-YYYY" />
                 </div>
 
                 <!-- Next Day Button -->
@@ -85,7 +85,17 @@
                     { data: 'autoId', name: 'autoId' },
                     { data: 'fingerPrintId', name: 'fingerprint' },
                     { data: 'machineId', name: 'machineid' },
-                    { data: 'date', name: 'date' },
+                    {
+                        data: 'date',
+                        name: 'date',
+                        render: function (data, type, row) {
+                            if (data) {
+                                const dateParts = data.split('-');
+                                return dateParts[2] + '-' + dateParts[1] + '-' + dateParts[0];
+                            }
+                            return '';
+                        }
+                    },
                     { data: 'time', name: 'time' },
                     {
                         data: null,
@@ -98,6 +108,7 @@
                     },
                     { data: 'hoalr' }
                 ],
+
                 order: [[0, 'desc']],
                 pageLength: 50,
                 lengthMenu: [[10, 25, 50, 100], [10, 25, 50, 100]],
