@@ -122,144 +122,98 @@ namespace HRM_Practise.Controllers
                 int commonYear = 1;
 
 
+
                 if (parameters2.StartDate != null)
                 {
+                   
 
+                    //var firstBatchResults = await tempQuery.ToListAsync();
 
                     int dateTemp;
                     bool isConversionSuccessful = int.TryParse(parameters2.StartDate, out dateTemp);
 
                     if (isConversionSuccessful)
                     {
-                        
-
-
-
                         if (parameters2.StartDate.Length >= 3)
                         {
-                           
-                            //parameters2.StartDate = Convert.ToString(commonYear);
                             commonYear = Convert.ToInt16(parameters2.StartDate);
                         }
                         else
                         {
-
                             commonDay = Convert.ToInt16(parameters2.StartDate);
                             if (dateTemp <= 12)
                             {
                                 commonMonth = Convert.ToInt16(parameters2.StartDate);
-
                             }
-
-                            // parameters2.StartDate = Convert.ToString(commonDay);
-                            // parameters2.StartDate = Convert.ToString(commonMonth);
                         }
                     }
                     else
                     {
                         var resultDate = ExtractDateComponents(parameters2.StartDate);
-
                         commonYear = Convert.ToInt16(resultDate.Year);
                         commonMonth = Convert.ToInt16(resultDate.Month);
                         commonDay = Convert.ToInt16(resultDate.Day);
-
-                        //resultDate.Day = Convert.ToInt16(commonDay);
-                        //resultDate.Month = Convert.ToInt16(commonMonth);
-                        //resultDate.Year = Convert.ToInt16(commonYear);
                     }
 
-
-
-
-
-
-
-                    //if (!parameters2.StartDate.Contains("/") || !parameters2.StartDate.Contains("-"))
-                    //{
-
-                    //    var dateTemp = Convert.ToInt16(parameters2.StartDate);
-
-
-
-                    //    if (parameters2.StartDate.Length >= 3)
-                    //    {
-                    //        //parameters2.StartDate = Convert.ToString(commonYear);
-                    //        commonYear = Convert.ToInt16(parameters2.StartDate);
-                    //    }
-                    //    else
-                    //    {
-
-                    //        commonDay = Convert.ToInt16(parameters2.StartDate);
-                    //        if (dateTemp <= 12)
-                    //        {
-                    //            commonMonth = Convert.ToInt16(parameters2.StartDate);
-
-                    //        }
-
-                    //        // parameters2.StartDate = Convert.ToString(commonDay);
-                    //        // parameters2.StartDate = Convert.ToString(commonMonth);
-                    //    }
-
-                    //}
-                    //else
-                    //{
-                    //    var resultDate = ExtractDateComponents(parameters2.StartDate);
-                    //    resultDate.Day = Convert.ToInt16(commonDay);
-                    //    resultDate.Month = Convert.ToInt16(commonMonth);
-                    //    resultDate.Year = Convert.ToInt16(commonYear);
-
-                    //}
-
-
-                }
-
-                if (commonDay != 1 || commonYear != 1 || commonMonth != 1)
-                {
-
-                    if (commonDay != 1 && commonMonth != 1 && commonYear != 1)
+                    if (commonDay != 1 || commonYear != 1 || commonMonth != 1)
                     {
-                        DateTime commonDayDate = new DateTime(commonYear, commonMonth, commonDay);
+                        var secondBatchQuery = query;
+
+                        if (commonDay != 1 && commonMonth != 1 && commonYear != 1)
+                        {
+                            DateTime commonDayDate = new DateTime(commonYear, commonMonth, commonDay);
+                            secondBatchQuery = secondBatchQuery.Where(m => m.Date == commonDayDate);
+                        }
+                        else if (commonDay != 1 || commonMonth != 1)
+                        {
+                            DateOnly commonDayDate = new DateOnly(commonYear, commonMonth, commonDay);
+
+                            if (commonDayDate.Month != 1)
+                            {
+                                secondBatchQuery = secondBatchQuery.Where(m => m.Date.Month == commonDayDate.Month || m.Date.Day == commonDayDate.Day);
+                            }
+                            else
+                            {
+                                secondBatchQuery = secondBatchQuery.Where(m => m.Date.Day == commonDayDate.Day);
+                            }
+                        }
+                        else if (commonYear != 1)
+                        {
+                            DateOnly commonDayDate = new DateOnly(commonYear, commonMonth, commonDay);
+                            var result = Convert.ToString(commonYear);
+
+                            if (result.Length == 3)
+                            {
+                                secondBatchQuery = _context.HRM_ATD_MachineDatas.AsNoTracking().Where(item => item.Date.Year.ToString().StartsWith(result));
+                            }
+                            else
+                            {
+                                secondBatchQuery = secondBatchQuery.Where(m => m.Date.Year == commonDayDate.Year);
+                            }
+                        }
+
+                        var tempQuery = query;
+
+                        tempQuery = tempQuery.Where(m =>
+                           (m.FingerPrintId != null && m.FingerPrintId.Contains(parameters2.StartDate))) ;
+                           //||
+                           //(m.MachineId != null && m.MachineId.Contains(parameters2.StartDate)) ||
+                           //(m.HOALR != null && m.HOALR.Contains(parameters2.StartDate)));
+
+                        var chkPoint = await tempQuery.CountAsync();
+
+                        query = tempQuery.Concat(secondBatchQuery);
 
 
-                        query = query.Where(m => m.Date == commonDayDate);
+                        var chkPoint2 = await query.CountAsync();
 
+                       
                     }
-                    else if (commonDay != 1 || commonMonth != 1)
+                    else
                     {
-                        DateOnly commonDayDate = new DateOnly(commonYear, commonMonth, commonDay);
-
-                        if (commonDayDate.Month !=  1)
-                        {
-                            query = query.Where(m => m.Date.Month == commonDayDate.Month || m.Date.Day == commonDayDate.Day);
-
-                        }
-                        else
-                        {
-                            query = query.Where(m => m.Date.Day == commonDayDate.Day);
-
-                        }
-
-
+                        
                     }
-                    else if (commonYear != 1)
-                    {
-                        DateOnly commonDayDate = new DateOnly(commonYear, commonMonth, commonDay);
 
-                        var result = Convert.ToString(commonYear);
-                        if (result.Length ==3)
-                        {
-                            //var ResChar = Convert.ToChar(result);
-                            query = _context.HRM_ATD_MachineDatas.AsNoTracking().Where(item => item.Date.Year.ToString().StartsWith(result));
-                           // query = query.Where(item => item.Date.Year.ToString().StartsWith(result)).ToList();
-
-                        }
-                        else
-                        {
-                           query = query.Where(m => m.Date.Year == commonDayDate.Year);
-
-                        }
-
-                    }
 
                 }
 
@@ -269,15 +223,9 @@ namespace HRM_Practise.Controllers
 
 
 
-                //if (parameters.StartDate.HasValue)
-                //{
-                //    query = query.Where(m => m.Date == parameters.StartDate.Value);
-                //}
 
-                //if (parameters.EndDate.HasValue)
-                //{
-                //    query = query.Where(m => m.Date <= parameters.EndDate.Value);
-                //}
+
+
 
 
                 // Get total count
