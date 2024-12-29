@@ -1,5 +1,8 @@
-﻿<!DOCTYPE html>
-<html lang="en">
+﻿@using System.Globalization
+
+
+<!DOCTYPE html>
+<html lang="@CultureInfo.CurrentCulture.Name"> <!-- Dynamically set the lang attribute based on the current culture -->
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,11 +11,28 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/HRM_Practise.styles.css" asp-append-version="true" />
 
-    @* dataTable  *@
+    @* DataTable *@
     <link rel="stylesheet" href="~/jsc/datatables.css" />
-
-
 </head>
+
+@* @{
+    var selectedLanguage = CultureInfo.CurrentCulture.Name;
+} *@
+
+@{
+    var languages = new Dictionary<string, string>
+    {
+        { "en", "English" },
+        { "es", "Spanish" },
+        { "fr", "French" },
+        { "de", "German" }
+    };
+    var selectedLanguage = CultureInfo.CurrentCulture.Name; // Or set this based on your logic
+}
+
+
+
+
 <body>
     <header>
         <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
@@ -38,9 +58,33 @@
                         </li>
 
                         <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="HRM_ATD_MachineData" asp-action="IndexDateSearch">Date Serach Non-Procedure</a>
+                            <a class="nav-link text-dark" asp-area="" asp-controller="HRM_ATD_MachineData" asp-action="IndexDateSearch">Date Search Non-Procedure</a>
                         </li>
                     </ul>
+
+                    <!-- Language Selection Dropdown -->
+                    <div class="nav-item">
+                        <form method="get" action="/Culture/SetCulture">
+
+                            <select name="culture" onchange="this.form.submit()" class="form-select">
+                                @foreach (var language in languages)
+                                {
+                                    <option value="@language.Key">
+                                        @language.Value
+                                    </option>
+                                }
+                            </select>
+
+
+                           @*  <select name="culture" onchange="this.form.submit()" class="form-select">
+                              <option value="en" @(selectedLanguage == "en" ? "selected" : "")>English</option>
+                                <option value="es" @(selectedLanguage == "es" ? "selected" : "")>Spanish</option>
+                                <option value="fr" @(selectedLanguage == "fr" ? "selected" : "")>French</option>
+                                <option value="de" @(selectedLanguage == "de" ? "selected" : "")>German</option>
+
+                            </select> *@
+                        </form>
+                    </div>
                 </div>
             </div>
         </nav>
@@ -60,11 +104,8 @@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
 
-
-
-    @* datatable *@
+    @* DataTable *@
     <script src="~/jsc/datatables.js"></script>
-
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

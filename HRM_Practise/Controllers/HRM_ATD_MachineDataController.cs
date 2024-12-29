@@ -7,6 +7,7 @@ using System.Data;
 using Microsoft.Extensions.Caching.Memory;
 using Newtonsoft.Json.Linq;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using HRM_Practise.Services;
 
 namespace HRM_Practise.Controllers
 {
@@ -14,11 +15,13 @@ namespace HRM_Practise.Controllers
     {
         private readonly AppDbContext _context;
         private readonly IMemoryCache _cache;
+        private readonly LibreTranslateService _libreTranslateService;
 
-        public HRM_ATD_MachineDataController(AppDbContext context, IMemoryCache cache)
+        public HRM_ATD_MachineDataController(AppDbContext context, IMemoryCache cache, LibreTranslateService libreTranslateService)
         {
             _context = context;
             _cache = cache;
+            _libreTranslateService = libreTranslateService;
         }
 
 
@@ -80,10 +83,21 @@ namespace HRM_Practise.Controllers
 
 
 
-        public IActionResult IndexDateSearch()
+        //public IActionResult IndexDateSearch()
+        //{
+        //    return View();
+        //}
+
+        public async Task<IActionResult> IndexDateSearch(string targetLang = "es")  // Default to Spanish
         {
+            string textToTranslate = "Hello, welcome to our website!";
+            string translatedText = await _libreTranslateService.TranslateTextAsync(textToTranslate, targetLang);
+
+            ViewBag.TranslatedText = translatedText;
             return View();
         }
+
+
 
         [HttpPost]
         public async Task<JsonResult> GetMachineDataWithDate([FromBody] DataTableParameters2 parameters2)
